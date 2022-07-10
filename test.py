@@ -72,7 +72,7 @@ def test(data,
         imgsz = check_img_size(imgsz, s=64)  # check img_size
 
     # Half
-    half = device.type != 'cpu'  # half precision only supported on CUDA
+    half = False #device.type != 'cpu'  # half precision only supported on CUDA
     if half:
         model.half()
 
