@@ -143,7 +143,7 @@ class WindowAttention(nn.Module):
 
         attn = self.attn_drop(attn)
 
-        x = (attn.float() @ v.float()).transpose(1, 2).reshape(B_, N, C)
+        x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
         x = self.proj(x)
         x = self.proj_drop(x)
         return x
@@ -402,7 +402,7 @@ class PatchEmbed(nn.Module):
         norm_layer (nn.Module, optional): Normalization layer. Default: None
     """
 
-    def __init__(self, patch_size=4, in_chans=3, embed_dim=96, norm_layer=None):
+    def __init__(self, patch_size=4, in_chans=3, embed_dim=96, norm_layer=None, drop_rate=0.):
         super().__init__()
         patch_size = to_2tuple(patch_size)
         self.patch_size = patch_size
@@ -415,6 +415,8 @@ class PatchEmbed(nn.Module):
             self.norm = norm_layer(embed_dim)
         else:
             self.norm = None
+
+        self.pos_drop = nn.Dropout(p=drop_rate)
 
     def forward(self, x):
         """Forward function."""
@@ -431,6 +433,9 @@ class PatchEmbed(nn.Module):
             x = x.flatten(2).transpose(1, 2)
             x = self.norm(x)
             x = x.transpose(1, 2).view(-1, self.embed_dim, Wh, Ww)
+
+
+        x = self.pos_drop(x)
 
         return x
 
