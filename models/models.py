@@ -2,7 +2,7 @@ from utils.google_utils import *
 from utils.layers import *
 from utils.parse_config import *
 from utils import torch_utils
-from SwinTransformer.models.swin_transformer_detectron import *
+from SwinYolor.SwinTransformer.models.swin_transformer_detectron import *
 
 ONNX_EXPORT = False
 
@@ -324,7 +324,7 @@ def create_modules(module_defs, img_size, cfg):
                 
         elif mdef['type'] == 'swin':
             swin_index += 1
-            depths = [2, 2, 3, 3, 2]
+            depths = [2, 2, 4, 2, 2]
             embed_dim = mdef['embed_dim']#96
             i_layer = swin_index#mdef['i_layer']#0
             patches_resolution = mdef['p_res']#[96, 96]
@@ -338,9 +338,9 @@ def create_modules(module_defs, img_size, cfg):
             drop_rate=0.
             attn_drop_rate=0.
             drop_path_rate=0.2
-            num_layers = 0#len(depths)
+            num_layers = 5#len(depths)
             use_checkpoint=False
-            
+            norm_layer=nn.LayerNorm
             #filters=
                 
             #layers = mdef['from'] if 'from' in mdef else []
@@ -352,7 +352,7 @@ def create_modules(module_defs, img_size, cfg):
             #                   window_size=window_size)
             
             modules = SwinBasicLayer(
-                        dim=output_filters[-1],#int(embed_dim * 2 ** i_layer),
+                        dim=embed_dim,#output_filters[-1],#int(embed_dim * 2 ** i_layer),
                         depth=depth,
                         num_heads=num_heads,
                         window_size=window_size,
@@ -366,10 +366,50 @@ def create_modules(module_defs, img_size, cfg):
                         downsample=None,#PatchMerging if (i_layer < num_layers - 1) else None,
                         use_checkpoint=use_checkpoint)
             
+
+        elif mdef['type'] == 'SwinTransformer':
+            embed_dim = mdef['embed_dim']
+            depths = mdef['depths']
+            num_heads = mdef['num_heads']
+            out_indices = mdef['out_indices']
+
+            depths = [int(n) for n in depths.split(',') if n]
+            num_heads = [int(n) for n in num_heads.split(',') if n]
+            out_indices = [int(n) for n in out_indices.split(',') if n]
+
+            modules = SwinTransformer(
+                pretrain_img_size=224,
+                 patch_size=4,
+                 in_chans=3,
+                 embed_dim=embed_dim,
+                 depths=depths,
+                 num_heads=num_heads,
+                 window_size=7,
+                 mlp_ratio=4.,
+                 qkv_bias=True,
+                 qk_scale=None,
+                 drop_rate=0.,
+                 attn_drop_rate=0.,
+                 drop_path_rate=0.2,
+                 norm_layer=nn.LayerNorm,
+                 ape=False,
+                 patch_norm=True,
+                 out_indices=out_indices,
+                 frozen_stages=-1,
+                 use_checkpoint=False
+            )
+
+            filters=embed_dim
+
+        elif mdef['type'] == 'SwinOutIndex':
+            indx = mdef['indx']
+            modules = SwinIndexer(indx)
+            filters = embed_dim * 2 **indx
+
         elif mdef['type'] == 'swin_downsample':
             dim=output_filters[-1]
-            norm = mdef['norm']
-            modules = SwinDownSample(dim, norm)
+            norm = nn.LayerNorm
+            modules = PatchMerging(dim, norm)
 
         elif mdef['type'] == 'jde':
             yolo_index += 1
@@ -500,77 +540,6 @@ class YOLOLayer(nn.Module):
             #io[..., :4] *= self.stride
             #torch.sigmoid_(io[..., 4:])
             return io.view(bs, -1, self.no), p  # view [1, 3, 13, 13, 85] as [1, 507, 85]
-        
-        
-class BasicLayer(nn.Module):
-    
-    """ A basic Swin Transformer layer for one stage.
-
-    Args:
-        dim (int): Number of input channels.
-        input_resolution (tuple[int]): Input resolution.
-        depth (int): Number of blocks.
-        num_heads (int): Number of attention heads.
-        window_size (int): Local window size.
-        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
-        qkv_bias (bool, optional): If True, add a learnable bias to query, key, value. Default: True
-        qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set.
-        drop (float, optional): Dropout rate. Default: 0.0
-        attn_drop (float, optional): Attention dropout rate. Default: 0.0
-        drop_path (float | tuple[float], optional): Stochastic depth rate. Default: 0.0
-        norm_layer (nn.Module, optional): Normalization layer. Default: nn.LayerNorm
-        downsample (nn.Module | None, optional): Downsample layer at the end of the layer. Default: None
-        use_checkpoint (bool): Whether to use checkpointing to save memory. Default: False.
-    """
-    
-    def __init__(self, dim, input_resolution, depth, num_heads, window_size,
-                 mlp_ratio=4., qkv_bias=True, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., norm_layer=nn.LayerNorm, downsample=None, use_checkpoint=False):
-
-        super().__init__()
-        self.dim = dim
-        self.input_resolution = input_resolution
-        self.depth = depth
-        self.use_checkpoint = use_checkpoint
-
-        # build blocks
-        self.blocks = nn.ModuleList([
-            SwinTransformerBlock(dim=dim, input_resolution=input_resolution,
-                                 num_heads=num_heads, window_size=window_size,
-                                 shift_size=0 if (i % 2 == 0) else window_size // 2,
-                                 mlp_ratio=mlp_ratio,
-                                 qkv_bias=qkv_bias, qk_scale=qk_scale,
-                                 drop=drop, attn_drop=attn_drop,
-                                 drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path,
-                                 norm_layer=norm_layer)
-            for i in range(depth)])
-
-        # patch merging layer
-        if downsample is not None:
-            self.downsample = downsample(input_resolution, dim=dim, norm_layer=norm_layer)
-        else:
-            self.downsample = None
-
-    def forward(self, x):
-        for blk in self.blocks:
-            if self.use_checkpoint:
-                x = checkpoint.checkpoint(blk, x)
-            else:
-                x = blk(x)
-        if self.downsample is not None:
-            x = self.downsample(x)
-        return x
-
-    def extra_repr(self) -> str:
-        return f"dim={self.dim}, input_resolution={self.input_resolution}, depth={self.depth}"
-
-    def flops(self):
-        flops = 0
-        for blk in self.blocks:
-            flops += blk.flops()
-        if self.downsample is not None:
-            flops += self.downsample.flops()
-        return flops
 
 
 class JDELayer(nn.Module):
@@ -720,6 +689,7 @@ class Darknet(nn.Module):
         img_size = x.shape[-2:]  # height, width
         yolo_out, out = [], []
         swin_out = []
+        swinT_out = []
         if verbose:
             print('0', x.shape)
             str = ''
@@ -768,8 +738,15 @@ class Darknet(nn.Module):
                 #x_out = x_out.view(-1, H, W, num_features).permute(0, 3, 1, 2).contiguous()
                 #print(x.shape)
                 swin_out.append(out)
+
+            elif name == 'SwinTransformer':
+                x = module(x)
+                swinT_out = x
+
+            elif name == 'SwinIndexer':
+                x = module(swinT_out)
                 
-            elif name == 'SwinDownSample':
+            elif name == 'PatchMerging':
                 Wh, Ww = x.size(2), x.size(3)
                 x = x.flatten(2).transpose(1, 2)
                 x, Wh, Ww = module(x, Wh, Ww)
@@ -783,8 +760,13 @@ class Darknet(nn.Module):
 
             out.append(x if self.routs[i] else [])
             if verbose:
-                print('%g/%g %s -' % (i, len(self.module_list), name), list(x.shape), str)
-                str = ''
+                if isinstance(x, list):
+                    x_shape = [list(sout.shape) for sout in x]
+                    print('%g/%g %s -' % (i, len(self.module_list), name), list(x_shape), str)
+                    str = ''
+                else:
+                    print('%g/%g %s -' % (i, len(self.module_list), name), list(x.shape), str)
+                    str = ''
 
         if self.training:  # train
             return yolo_out
@@ -953,3 +935,17 @@ def attempt_download(weights):
         if not (r == 0 and os.path.exists(weights) and os.path.getsize(weights) > 1E6):  # weights exist and > 1MB
             os.system('rm ' + weights)  # remove partial downloads
             raise Exception(msg)
+
+
+class SwinIndexer(nn.Module):
+
+    def __init__(self, indx, verbose=False):
+        self.indx = indx
+        super(SwinIndexer, self).__init__()
+
+    def forward(self, swinT_out):
+        #print('SwinIndexer: ', len(swinT_out))
+        #print(swinT_out)
+        #print('Shape: ', swinT_out[self.indx].shape)
+        #print('done')
+        return swinT_out[self.indx]
