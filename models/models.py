@@ -2,7 +2,7 @@ from utils.google_utils import *
 from utils.layers import *
 from utils.parse_config import *
 from utils import torch_utils
-from SwinYolor.SwinTransformer.models.swin_transformer_detectron import *
+from SwinTransformer.models.swin_transformer_detectron import *
 
 ONNX_EXPORT = False
 
