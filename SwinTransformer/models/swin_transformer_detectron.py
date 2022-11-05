@@ -286,7 +286,8 @@ class PatchMerging(nn.Module):
 
         x = self.norm(x)
         x = self.reduction(x)
-
+        #print('in the patchmerging')
+        #print('x patchmerging: ', x.size())
         return x
 
 
@@ -348,8 +349,10 @@ class SwinBasicLayer(nn.Module):
         # patch merging layer
         if downsample is not None:
             self.downsample = downsample(dim=dim, norm_layer=norm_layer)
+            self.out_dim = dim*2
         else:
             self.downsample = None
+            self.out_dim = dim
 
     def forward(self, x, H, W):
         """ Forward function.
@@ -386,10 +389,13 @@ class SwinBasicLayer(nn.Module):
             else:
                 x = blk(x, attn_mask)
         if self.downsample is not None:
+            #print('downsample not none')
             x_down = self.downsample(x, H, W)
             Wh, Ww = (H + 1) // 2, (W + 1) // 2
+            #print('x after downsample: ', x_down.size())
             return x, H, W, x_down, Wh, Ww
         else:
+            #print('downsample none')
             return x, H, W, x, H, W
 
 

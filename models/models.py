@@ -324,9 +324,9 @@ def create_modules(module_defs, img_size, cfg):
                 
         elif mdef['type'] == 'swin':
             swin_index += 1
-            depths = [2, 2, 4, 2, 2]
+            depths = [2, 2, 6, 2]
             embed_dim = mdef['embed_dim']#96
-            i_layer = swin_index#mdef['i_layer']#0
+            i_layer = mdef['i_layer']#0
             patches_resolution = mdef['p_res']#[96, 96]
             depth = mdef['depth']#[2, 2]
             num_heads = mdef['num_heads']#[3, 6]
@@ -338,10 +338,13 @@ def create_modules(module_defs, img_size, cfg):
             drop_rate=0.
             attn_drop_rate=0.
             drop_path_rate=0.2
-            num_layers = 5#len(depths)
+            num_layers = len(depths)
             use_checkpoint=False
             norm_layer=nn.LayerNorm
-            #filters=
+            if (i_layer < num_layers - 1):
+                filters = embed_dim*2
+            else:
+                filters = embed_dim
                 
             #layers = mdef['from'] if 'from' in mdef else []
             #modules = BasicLayer(dim=int(embed_dim * 2 ** i_layer),
@@ -363,7 +366,7 @@ def create_modules(module_defs, img_size, cfg):
                         attn_drop=attn_drop_rate,
                         drop_path=dpr[sum(depths[:i_layer]):sum(depths[:i_layer + 1])],
                         norm_layer=norm_layer,
-                        downsample=None,#PatchMerging if (i_layer < num_layers - 1) else None,
+                        downsample=PatchMerging if (i_layer < num_layers - 1) else None,
                         use_checkpoint=use_checkpoint)
             
 
@@ -724,12 +727,15 @@ class Darknet(nn.Module):
                 # add ape to patch embedding module
                 Wh, Ww = x.size(2), x.size(3)
                 x = x.flatten(2).transpose(1, 2)
-                x_out, H, W, x, Wh, Ww = module(x, Wh, Ww)
+                #print('x shape 1: ', x.size())
+                x_out, H, W, x_down, Wh, Ww = module(x, Wh, Ww)
                 
-                num_features = module.num_features
+                num_features = module.out_dim
                 #print(num_features)
                 
-                x = x.view(-1, Wh, Ww, num_features).permute(0, 3, 1, 2).contiguous()
+                x = x_down.view(-1, Wh, Ww, num_features).permute(0, 3, 1, 2).contiguous()
+
+                #print('x shape 2: ', x.size(), x_down.size())
                 
                 #if i in self.out_indices:
                 #    norm_layer = getattr(self, f'norm{i}')
@@ -737,7 +743,7 @@ class Darknet(nn.Module):
                 
                 #x_out = x_out.view(-1, H, W, num_features).permute(0, 3, 1, 2).contiguous()
                 #print(x.shape)
-                swin_out.append(out)
+                swin_out.append(x_out)
 
             elif name == 'SwinTransformer':
                 x = module(x)

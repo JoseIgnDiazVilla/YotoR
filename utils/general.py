@@ -447,3 +447,31 @@ def increment_path(path, exist_ok=True, sep=''):
         i = [int(m.groups()[0]) for m in matches if m]  # indices
         n = max(i) + 1 if i else 2  # increment number
         return f"{path}{sep}{n}"  # update path
+
+
+def get_backbone_weights(weights_path):
+    out = {}
+
+    pretrain = torch.load(weights_path)
+
+    pretrain_weights = pretrain['state_dict']
+
+    pretrain_keys = list(pretrain_weights.keys())
+
+    for key in pretrain_keys:
+        if 'backbone' in key:
+            out_key = key.replace('backbone', 'module_list.0')
+            out[out_key] = pretrain_weights.pop(key)
+
+    return out
+
+def load_swin_weights(model, weights_path):
+    """
+    loads weights from the swin transformer detectron backbone to the swin yolor modules for transfer learning
+    """
+    
+    backbone_weights = get_backbone_weights(weights_path)
+
+    model.load_state_dict(backbone_weights, strict=False)
+
+    return model
