@@ -20,7 +20,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-import test  # import test.py to get mAP after each epoch
+import testing  # import test.py to get mAP after each epoch
 #from models.yolo import Model
 from models.models import *
 from utils.autoanchor import check_anchors
@@ -333,7 +333,7 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
             final_epoch = epoch + 1 == epochs
             if not opt.notest or final_epoch:  # Calculate mAP
                 if epoch >= 3:
-                    results, maps, times = test.test(opt.data,
+                    results, maps, times = testing.test(opt.data,
                                                  batch_size=batch_size*2,
                                                  imgsz=imgsz_test,
                                                  model=ema.ema.module if hasattr(ema.ema, 'module') else ema.ema,
