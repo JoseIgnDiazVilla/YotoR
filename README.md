@@ -1,8 +1,8 @@
-# Swin-Yolor
-Repository for thesis Swin-Yolor
+# YotoR: You Transform One Representation
+Repository for thesis YotoR, an unified network for object detection using transformers.
 
 
-Based on [You Only Learn One Representation: Unified Network for Multiple Tasks](https://arxiv.org/abs/2105.04206)
+Architecture based on [You Only Learn One Representation: Unified Network for Multiple Tasks](https://arxiv.org/abs/2105.04206) and [Swin Transformer: Hierarchical Vision Transformer using Shifted Windows](https://arxiv.org/pdf/2103.14030.pdf)
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/you-only-learn-one-representation-unified/real-time-object-detection-on-coco)](https://paperswithcode.com/sota/real-time-object-detection-on-coco?p=you-only-learn-one-representation-unified)
 
@@ -48,7 +48,7 @@ Colab environment
   
 ```
 git clone https://github.com/WongKinYiu/yolor
-cd yolor
+cd yotor
 
 # pip install required packages
 pip install -qr requirements.txt
@@ -85,7 +85,7 @@ Prepare pretrained weight
 <details><summary> <b>Expand</b> </summary>
 
 ```
-cd /yolor
+cd /yotor
 bash scripts/get_pretrain.sh
 ```
 
