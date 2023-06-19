@@ -1,4 +1,4 @@
-# YotoR: You Transform One Representation
+# YotoR: You Only Transform One Representation
 Repository for thesis YotoR, an unified network for object detection using transformers.
 
 
