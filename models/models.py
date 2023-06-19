@@ -2,7 +2,15 @@ from utils.google_utils import *
 from utils.layers import *
 from utils.parse_config import *
 from utils import torch_utils
-from SwinTransformer.models.swin_transformer_detectron import *
+from SwinTransformer.models.swin_transformer_detectron import SwinTransformer
+from SwinTransformerV2.models.swin_transformer_detectron_v2 import SwinTransformerV2 # Bad practice, but works
+import torch
+from torchvision.models import swin_v2_t, swin_v2_b
+from torchvision.models.feature_extraction import get_graph_node_names
+from torchvision.models.feature_extraction import create_feature_extractor
+from torchvision.models.detection.mask_rcnn import MaskRCNN
+from torchvision.models.detection.backbone_utils import LastLevelMaxPool
+from torchvision.ops.feature_pyramid_network import FeaturePyramidNetwork
 
 ONNX_EXPORT = False
 
@@ -382,31 +390,80 @@ def create_modules(module_defs, img_size, cfg):
 
             modules = SwinTransformer(
                 pretrain_img_size=224,
-                 patch_size=4,
-                 in_chans=3,
-                 embed_dim=embed_dim,
-                 depths=depths,
-                 num_heads=num_heads,
-                 window_size=7,
-                 mlp_ratio=4.,
-                 qkv_bias=True,
-                 qk_scale=None,
-                 drop_rate=0.,
-                 attn_drop_rate=0.,
-                 drop_path_rate=0.2,
-                 norm_layer=nn.LayerNorm,
-                 ape=False,
-                 patch_norm=True,
-                 out_indices=out_indices,
-                 frozen_stages=-1,
-                 use_checkpoint=False
+                patch_size=4,
+                in_chans=3,
+                embed_dim=embed_dim,
+                depths=depths,
+                num_heads=num_heads,
+                window_size=7,
+                mlp_ratio=4.,
+                qkv_bias=True,
+                qk_scale=None,
+                drop_rate=0.,
+                attn_drop_rate=0.,
+                drop_path_rate=0.2,
+                norm_layer=nn.LayerNorm,
+                ape=False,
+                patch_norm=True,
+                out_indices=out_indices,
+                frozen_stages=-1,
+                use_checkpoint=False
             )
+
+            filters=embed_dim
+
+        elif mdef['type'] == 'SwinTransformerV2':
+            img_size = mdef['img_size']
+            embed_dim = mdef['embed_dim'] #96
+            depths = mdef['depths'] #[2, 2, 6, 2]
+            num_heads = mdef['num_heads'] #[3, 6, 12, 24]
+            out_indices = mdef['out_indices'] 
+            window_size = mdef['window_size']
+            pw_sizes = mdef['pw_sizes']
+
+            depths = [int(n) for n in depths.split(',') if n]
+            num_heads = [int(n) for n in num_heads.split(',') if n]
+            out_indices = [int(n) for n in out_indices.split(',') if n]
+
+            modules = SwinTransformerV2(
+                img_size=img_size, 
+                patch_size=4, 
+                in_chans=3,
+                embed_dim=embed_dim, 
+                depths=depths, 
+                num_heads=num_heads,
+                window_size=window_size, 
+                mlp_ratio=4., 
+                qkv_bias=True,
+                drop_rate=0., 
+                attn_drop_rate=0., 
+                drop_path_rate=0.1,
+                norm_layer=nn.LayerNorm, 
+                ape=False, 
+                patch_norm=True,
+                out_indices=out_indices,
+                frozen_stages=-1,
+                use_checkpoint=False, 
+                pretrained_window_sizes=[0, 0, 0, 0]
+            )
+            
+        elif mdef['type'] == 'SwinTransformerV2FPN':
+            img_size = mdef['img_size']
+            model_type = mdef['model_type'] #96
+            weights= mdef['weights']
+            embed_dim = mdef['embed_dim']
+            modules = SwinTransformerV2FPN(model_type=model_type, imgs=img_size, weights=weights)
 
             filters=embed_dim
 
         elif mdef['type'] == 'SwinOutIndex':
             indx = mdef['indx']
             modules = SwinIndexer(indx)
+            filters = embed_dim * 2 **indx
+
+        elif mdef['type'] == 'SwinOutIndexFPN':
+            indx = mdef['indx']
+            modules = SwinIndexerFPN(indx)
             filters = embed_dim * 2 **indx
 
         elif mdef['type'] == 'swin_downsample':
@@ -749,7 +806,20 @@ class Darknet(nn.Module):
                 x = module(x)
                 swinT_out = x
 
+            elif name == 'SwinTransformerV2':
+                x = module(x)
+                swinT_out = x
+
+            elif name == 'SwinTransformerV2FPN':
+                x = list(module(x).values())
+                #print(x)
+                #print(x.values())
+                swinT_out = x
+
             elif name == 'SwinIndexer':
+                x = module(swinT_out)
+
+            elif name == 'SwinIndexerFPN':
                 x = module(swinT_out)
                 
             elif name == 'PatchMerging':
@@ -766,6 +836,7 @@ class Darknet(nn.Module):
 
             out.append(x if self.routs[i] else [])
             if verbose:
+                #print(name)
                 if isinstance(x, list):
                     x_shape = [list(sout.shape) for sout in x]
                     print('%g/%g %s -' % (i, len(self.module_list), name), list(x_shape), str)
@@ -955,3 +1026,52 @@ class SwinIndexer(nn.Module):
         #print('Shape: ', swinT_out[self.indx].shape)
         #print('done')
         return swinT_out[self.indx]
+    
+class SwinIndexerFPN(nn.Module):
+
+    def __init__(self, indx, verbose=False):
+        self.indx = indx
+        super(SwinIndexerFPN, self).__init__()
+
+    def forward(self, swinT_out):
+        #print('SwinIndexer: ', len(swinT_out))
+        #print(swinT_out)
+        #print('Shape: ', swinT_out[self.indx].shape)
+        #print('done')
+        return swinT_out[self.indx].permute(0, 3, 1, 2)
+    
+
+class SwinTransformerV2FPN(torch.nn.Module):
+    def __init__(self, model_type, imgs=224, weights='DEFAULT'):
+        super(SwinTransformerV2FPN, self).__init__()
+        # Get a resnet50 backbone
+        if model_type == "swint":
+            m = swin_v2_t()
+        elif model_type == "swinb":
+            m = swin_v2_b()
+        # Extract 4 main layers (note: MaskRCNN needs this particular name
+        # mapping for return nodes)
+        return_nodes = {
+            # node_name: user-specified key for output dict
+            'features.1': 'layer1',
+            'features.3': 'layer2',
+            'features.5': 'layer3',
+            'norm': 'layer4',
+        }
+        self.body = create_feature_extractor(
+            m, return_nodes=return_nodes)
+        # Dry run to get number of channels for FPN
+        inp = torch.randn(2, 3, imgs, imgs)
+        with torch.no_grad():
+            out = self.body(inp)
+        in_channels_list = [o.shape[1] for o in out.values()]
+        # Build FPN
+        self.out_channels = 256
+        #self.fpn = FeaturePyramidNetwork(
+        #    in_channels_list, out_channels=self.out_channels,
+        #    extra_blocks=LastLevelMaxPool())
+
+    def forward(self, x):
+        x = self.body(x)
+        #x = self.fpn(x)
+        return x

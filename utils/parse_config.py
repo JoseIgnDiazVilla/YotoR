@@ -43,7 +43,8 @@ def parse_model_cfg(path):
                  'stride_x', 'stride_y', 'weights_type', 'weights_normalization', 'scale_x_y', 'beta_nms', 'nms_kind',
                  'iou_loss', 'iou_normalizer', 'cls_normalizer', 'iou_thresh', 'atoms', 'na', 'nc',
                  'embed_dim', 'i_layer', 'p_res', 'depth', 'num_heads', 'w_size', 'img_size', 'patch_size', 'in_chans',
-                 'patch_norm', 'norm', 'depths', 'num_heads', 'out_indices', 'indx', 'embed_dim']
+                 'patch_norm', 'norm', 'depths', 'num_heads', 'out_indices', 'indx', 'embed_dim', 'img_size', 'window_size', 'pw_sizes',
+                 'model_type', 'weights']
 
     f = []  # fields
     for x in mdefs[1:]:

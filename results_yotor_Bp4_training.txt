@@ -1,0 +1,78 @@
+root@ef39711d8163:/SwinYolor# python testing.py --data data/coco.yaml --img 1280 --batch 4 --conf 0.001 --iou 0.65 --device 0 --cfg cfg/yotor_Bp4.cfg --weights runs/train/yotor_Bp44/weights/best.pt --name yotor_Bp4_test
+Namespace(augment=False, batch_size=4, cfg='cfg/yotor_Bp4.cfg', conf_thres=0.001, data='data/coco.yaml', device='0', exist_ok=False, img_size=1280, iou_thres=0.65, name='yotor_Bp4_test', names='data/coco.names', project='runs/test', save_conf=False, save_json=True, save_txt=False, single_cls=False, task='val', verbose=False, weights=['runs/train/yotor_Bp44/weights/best.pt'])
+Using torch 1.7.0 CUDA:0 (Tesla V100-SXM2-32GB, 32480MB)
+
+Model Summary: 770 layers, 116753072 parameters, 116753072 gradients, 295.542060440 GFLOPS
+Scanning labels ../coco/labels/val2017.cache3 (4952 found, 0 missing, 48 empty, 0 duplicate, for 5000 images): 5000it [00:00, 9533.17it/s]
+               Class      Images     Targets           P           R      mAP@.5  mAP@.5:.95: 100%|██████████████████████████████████████████████████████| 1250/1250 [10:07<00:00,  2.06it/s]
+                 all       5e+03    3.63e+04        0.53       0.759       0.708       0.514
+Speed: 113.0/1.5/114.4 ms inference/NMS/total per 1280x1280 image at batch-size 4
+
+Evaluating pycocotools mAP... saving runs/test/yotor_Bp4_test/best_predictions.json...
+loading annotations into memory...
+Done (t=0.54s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=3.81s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=125.11s).
+Accumulating evaluation results...
+DONE (t=12.47s).
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.52485
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.71282
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.57366
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.37081
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.57211
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.67246
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.38718
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.63414
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.68699
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.54662
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.72750
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.81591
+Results saved to runs/test/yotor_Bp4_test
+
+
+
+root@ef39711d8163:/SwinYolor# python testing.py --data data/coco.yaml --img 1280 --batch 8 --conf 0.001 --iou 0.65 --device 0 --cfg cfg/yotor_Bp4.cfg --weights runs/train/yotor_Bp44/weights/best.pt --name yotor_Bp4_test
+Namespace(augment=False, batch_size=8, cfg='cfg/yotor_Bp4.cfg', conf_thres=0.001, data='data/coco.yaml', device='0', exist_ok=False, img_size=1280, iou_thres=0.65, name='yotor_Bp4_test', names='data/coco.names', project='runs/test', save_conf=False, save_json=True, save_txt=False, single_cls=False, task='val', verbose=False, weights=['runs/train/yotor_Bp44/weights/best.pt'])
+Using torch 1.7.0 CUDA:0 (Tesla V100-SXM2-32GB, 32480MB)
+
+Model Summary: 770 layers, 116753072 parameters, 116753072 gradients, 295.542060440 GFLOPS
+Scanning labels ../coco/labels/val2017.cache3 (4952 found, 0 missing, 48 empty, 0 duplicate, for 5000 images): 5000it [00:00, 9345.18it/s]
+               Class      Images     Targets           P           R      mAP@.5  mAP@.5:.95: 100%|████████████████████████████████████████████████████████| 625/625 [10:06<00:00,  1.03it/s]
+                 all       5e+03    3.63e+04        0.53        0.76       0.708       0.514
+Speed: 112.2/1.5/113.7 ms inference/NMS/total per 1280x1280 image at batch-size 8
+
+Evaluating pycocotools mAP... saving runs/test/yotor_Bp4_test2/best_predictions.json...
+loading annotations into memory...
+Done (t=0.54s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=4.30s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=126.72s).
+Accumulating evaluation results...
+DONE (t=12.67s).
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.52493
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.71307
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.57378
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.37085
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.57252
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.67253
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.38720
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.63399
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.68684
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.54654
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.72727
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.81586
+Results saved to runs/test/yotor_Bp4_test2
+
