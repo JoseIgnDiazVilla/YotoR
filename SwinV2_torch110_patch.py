@@ -5961,7 +5961,7 @@ def _patch_merging_pad(x: torch.Tensor) -> torch.Tensor:
     return x
 
 
-torch.fx.wrap("_patch_merging_pad")
+#torch.fx.wrap("_patch_merging_pad")
 
 
 def _get_relative_position_bias(
@@ -5974,7 +5974,7 @@ def _get_relative_position_bias(
     return relative_position_bias
 
 
-torch.fx.wrap("_get_relative_position_bias")
+#torch.fx.wrap("_get_relative_position_bias")
 
 
 class PatchMerging(nn.Module):
@@ -6144,7 +6144,7 @@ def shifted_window_attention(
     return x
 
 
-torch.fx.wrap("shifted_window_attention")
+#torch.fx.wrap("shifted_window_attention")
 
 
 class ShiftedWindowAttention(nn.Module):
