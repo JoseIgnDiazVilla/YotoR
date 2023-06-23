@@ -1046,9 +1046,9 @@ class SwinTransformerV2FPN(torch.nn.Module):
         super(SwinTransformerV2FPN, self).__init__()
         # Get a resnet50 backbone
         if model_type == "swint":
-            m = swin_v2_t()
+            m = swin_v2_t(weights=weights)
         elif model_type == "swinb":
-            m = swin_v2_b()
+            m = swin_v2_b(weights=weights)
         # Extract 4 main layers (note: MaskRCNN needs this particular name
         # mapping for return nodes)
         return_nodes = {
