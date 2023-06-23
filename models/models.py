@@ -9,7 +9,7 @@ try:
     from torchvision.models import swin_v2_t, swin_v2_b
 except ImportError:
     print("WARNING: swinv2 models not found, using 1.10 patch")
-    from SwinV2_torch110_patch import swin_v2_t as swin_v2_t_110
+    from SwinV2_torch110_patch import swin_v2_t, swin_v2_b
 
 from torchvision.models.feature_extraction import get_graph_node_names
 from torchvision.models.feature_extraction import create_feature_extractor
