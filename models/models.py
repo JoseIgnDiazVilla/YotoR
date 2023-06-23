@@ -5,7 +5,12 @@ from utils import torch_utils
 from SwinTransformer.models.swin_transformer_detectron import SwinTransformer
 from SwinTransformerV2.models.swin_transformer_detectron_v2 import SwinTransformerV2 # Bad practice, but works
 import torch
-from torchvision.models import swin_v2_t, swin_v2_b
+try:
+    from torchvision.models import swin_v2_t, swin_v2_b
+except ImportError:
+    print("WARNING: swinv2 models not found, using 1.10 patch")
+    from SwinV2_torch110_patch import swin_v2_t as swin_v2_t_110
+
 from torchvision.models.feature_extraction import get_graph_node_names
 from torchvision.models.feature_extraction import create_feature_extractor
 from torchvision.models.detection.mask_rcnn import MaskRCNN
