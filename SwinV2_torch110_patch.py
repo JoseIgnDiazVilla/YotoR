@@ -5927,7 +5927,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn, Tensor
 
-#from torchvision.ops.stochastic_depth import StochasticDepth
+from torchvision.ops.stochastic_depth import StochasticDepth
 #from torchvision.models._api import register_model, Weights, WeightsEnum
 #from torchvision.models._meta import _IMAGENET_CATEGORIES
 #from torchvision.models._utils import _ovewrite_named_param, handle_legacy_interface
