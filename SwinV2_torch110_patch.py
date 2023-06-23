@@ -5862,7 +5862,6 @@ class _ModelURLs(dict):
     
 
 import torch
-import torch.fx
 from torch import nn, Tensor
 
 
@@ -5884,36 +5883,26 @@ def stochastic_depth(input: Tensor, p: float, mode: str, training: bool = True) 
     Returns:
         Tensor[N, ...]: The randomly zeroed tensor.
     """
-    if not torch.jit.is_scripting() and not torch.jit.is_tracing():
-        pass
     if p < 0.0 or p > 1.0:
-        raise ValueError(f"drop probability has to be between 0 and 1, but got {p}")
+        raise ValueError("drop probability has to be between 0 and 1, but got {}".format(p))
     if mode not in ["batch", "row"]:
-        raise ValueError(f"mode has to be either 'batch' or 'row', but got {mode}")
+        raise ValueError("mode has to be either 'batch' or 'row', but got {}".format(mode))
     if not training or p == 0.0:
         return input
 
     survival_rate = 1.0 - p
+    size = [1] * input.ndim
     if mode == "row":
-        size = [input.shape[0]] + [1] * (input.ndim - 1)
-    else:
-        size = [1] * input.ndim
+        size[0] = input.shape[0]
     noise = torch.empty(size, dtype=input.dtype, device=input.device)
-    noise = noise.bernoulli_(survival_rate)
-    if survival_rate > 0.0:
-        noise.div_(survival_rate)
+    noise = noise.bernoulli_(survival_rate).div_(survival_rate)
     return input * noise
-
-
-
-torch.fx.wrap("stochastic_depth")
 
 
 class StochasticDepth(nn.Module):
     """
     See :func:`stochastic_depth`.
     """
-
     def __init__(self, p: float, mode: str) -> None:
         super().__init__()
         self.p = p
@@ -5922,12 +5911,12 @@ class StochasticDepth(nn.Module):
     def forward(self, input: Tensor) -> Tensor:
         return stochastic_depth(input, self.p, self.mode, self.training)
 
-
     def __repr__(self) -> str:
-        s = f"{self.__class__.__name__}(p={self.p}, mode={self.mode})"
-        return s
-
-
+        tmpstr = self.__class__.__name__ + '('
+        tmpstr += 'p=' + str(self.p)
+        tmpstr += ', mode=' + str(self.mode)
+        tmpstr += ')'
+        return tmpstr
     
 
 import math
