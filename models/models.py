@@ -1066,12 +1066,12 @@ class SwinTransformerV2FPN(torch.nn.Module):
         self.body = create_feature_extractor(
             m, return_nodes=return_nodes)
         # Dry run to get number of channels for FPN
-        inp = torch.randn(2, 3, imgs, imgs)
-        with torch.no_grad():
-            out = self.body(inp)
-        in_channels_list = [o.shape[1] for o in out.values()]
+        #inp = torch.randn(2, 3, imgs, imgs)
+        #with torch.no_grad():
+        #    out = self.body(inp)
+        #in_channels_list = [o.shape[1] for o in out.values()]
         # Build FPN
-        self.out_channels = 256
+        #self.out_channels = 256
         #self.fpn = FeaturePyramidNetwork(
         #    in_channels_list, out_channels=self.out_channels,
         #    extra_blocks=LastLevelMaxPool())
