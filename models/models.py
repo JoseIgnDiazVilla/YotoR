@@ -5,11 +5,11 @@ from utils import torch_utils
 from SwinTransformer.models.swin_transformer_detectron import SwinTransformer
 from SwinTransformerV2.models.swin_transformer_detectron_v2 import SwinTransformerV2 # Bad practice, but works
 import torch
-try:
-    from torchvision.models import swin_v2_t, swin_v2_b
-except ImportError:
-    print("WARNING: swinv2 models not found, using 1.10 patch")
-    from SwinV2_torch110_patch import swin_v2_t, swin_v2_b
+#try:
+#    from torchvision.models import swin_v2_t, swin_v2_b
+#except ImportError:
+#    print("WARNING: swinv2 models not found, using 1.10 patch")
+from SwinV2_torch110_patch import swin_v2_t, swin_v2_b
 
 from torchvision.models.feature_extraction import get_graph_node_names
 from torchvision.models.feature_extraction import create_feature_extractor
@@ -816,7 +816,8 @@ class Darknet(nn.Module):
                 swinT_out = x
 
             elif name == 'SwinTransformerV2FPN':
-                x = list(module(x).values())
+                #x = list(module(x).values())
+                x = module(x)
                 #print(x)
                 #print(x.values())
                 swinT_out = x
@@ -1043,7 +1044,7 @@ class SwinIndexerFPN(nn.Module):
         #print(swinT_out)
         #print('Shape: ', swinT_out[self.indx].shape)
         #print('done')
-        return swinT_out[self.indx].permute(0, 3, 1, 2)
+        return swinT_out[self.indx]#.permute([0, 3, 1, 2])
     
 
 class SwinTransformerV2FPN(torch.nn.Module):
@@ -1051,9 +1052,9 @@ class SwinTransformerV2FPN(torch.nn.Module):
         super(SwinTransformerV2FPN, self).__init__()
         # Get a resnet50 backbone
         if model_type == "swint":
-            m = swin_v2_t(weights=weights)
+            m = swin_v2_t(weights=None)
         elif model_type == "swinb":
-            m = swin_v2_b(weights=weights)
+            m = swin_v2_b(weights=None)
         # Extract 4 main layers (note: MaskRCNN needs this particular name
         # mapping for return nodes)
         return_nodes = {
@@ -1063,8 +1064,7 @@ class SwinTransformerV2FPN(torch.nn.Module):
             'features.5': 'layer3',
             'norm': 'layer4',
         }
-        self.body = create_feature_extractor(
-            m, return_nodes=return_nodes)
+        self.body = m#create_feature_extractor(m, return_nodes=return_nodes)
         # Dry run to get number of channels for FPN
         #inp = torch.randn(2, 3, imgs, imgs)
         #with torch.no_grad():

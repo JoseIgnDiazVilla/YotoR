@@ -691,7 +691,7 @@ class SwinTransformerV2(nn.Module):
 
     def forward(self, x):
         """Forward function."""
-        print('input: ', x.shape)
+        #print('input: ', x.shape)
         x = self.patch_embed(x)
 
         #print(x.size())
@@ -707,7 +707,7 @@ class SwinTransformerV2(nn.Module):
         outs = []
         for i in range(self.num_layers):
             layer = self.layers[i]
-            print('layer: ', x.shape)
+            #print('layer: ', x.shape)
             x_out, H, W, x, Wh, Ww = layer(x, Wh, Ww)
 
             if i in self.out_indices:
