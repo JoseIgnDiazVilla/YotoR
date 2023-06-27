@@ -20,7 +20,7 @@ apt update
 apt install -y zip htop screen libgl1-mesa-glx
 
 # pip install required packages
-pip install seaborn thop
+pip install seaborn thop timm
 
 # install mish-cuda if you want to use mish activation
 # https://github.com/thomasbrandon/mish-cuda
@@ -38,7 +38,7 @@ cd pytorch_wavelets
 pip install .
 
 # go to code folder
-cd /Swin-Yolor
+cd /YotoR
 ```
 
 </details>
@@ -47,8 +47,8 @@ Colab environment
 <details><summary> <b>Expand</b> </summary>
   
 ```
-git clone https://github.com/WongKinYiu/yolor
-cd yotor
+git clone https://github.com/JoseIgnDiazVilla/YotoR
+cd YotoR
 
 # pip install required packages
 pip install -qr requirements.txt
