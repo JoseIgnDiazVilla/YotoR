@@ -6586,8 +6586,8 @@ class SwinTransformer(nn.Module):
         total_stage_blocks = sum(depths)
         stage_block_id = 0
         # build SwinTransformer blocks
-        self.stages = []
-        self.downsamples = []
+        list_stages = []
+        list_downsamples = []
         for i_stage in range(len(depths)):
             stage: List[nn.Module] = []
             dim = embed_dim * 2**i_stage
@@ -6609,13 +6609,15 @@ class SwinTransformer(nn.Module):
                 )
                 stage_block_id += 1
             #layers.append(nn.Sequential(*stage))
-            self.stages.append(nn.Sequential(*stage))
+            list_stages.append(nn.Sequential(*stage))
             # add patch merging layer
             if i_stage < (len(depths) - 1):
                 #layers.append(downsample_layer(dim, norm_layer))
-                self.downsamples.append(downsample_layer(dim, norm_layer))
+                list_downsamples.append(downsample_layer(dim, norm_layer))
 
         #self.features = nn.Sequential(*layers)
+        self.stages = nn.ModuleList(list_stages)
+        self.downsamples = nn.ModuleList(list_downsamples)
 
         num_features = embed_dim * 2 ** (len(depths) - 1)
         self.norm = norm_layer(num_features)
