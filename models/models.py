@@ -1059,12 +1059,19 @@ class SwinTransformerV2FPN(torch.nn.Module):
             m = swin_v2_b(weights=weights)
         # Extract 4 main layers (note: MaskRCNN needs this particular name
         # mapping for return nodes)
+        #return_nodes = {
+        #    # node_name: user-specified key for output dict
+        #    'features.1': 'layer1',
+        #    'features.3': 'layer2',
+        #    'features.5': 'layer3',
+        #    'norm': 'layer4',
+        #}
         return_nodes = {
             # node_name: user-specified key for output dict
-            'features.1': 'layer1',
-            'features.3': 'layer2',
-            'features.5': 'layer3',
-            'norm': 'layer4',
+            'stages.0': 'layer1',
+            'stages.1': 'layer2',
+            'stages.2': 'layer3',
+            'stages.3': 'layer4',
         }
         self.body = create_feature_extractor(m, return_nodes=return_nodes)
         # Dry run to get number of channels for FPN
