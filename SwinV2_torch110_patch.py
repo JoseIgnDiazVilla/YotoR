@@ -6679,11 +6679,12 @@ def _swin_transformer(
     )
 
     if weights is not None:
-        for key in list(weights.keys()):
+        weights_sd = weights.get_state_dict(progress=progress, check_hash=True)
+        for key in list(weights_sd.keys()):
             if 'features' in key:
                 weights[key.replace('features', 'stages')] = weights[key]
                 del weights[key]
-        model.load_state_dict(weights.get_state_dict(progress=progress, check_hash=True))
+        model.load_state_dict(weights_sd)
 
     return model
 
