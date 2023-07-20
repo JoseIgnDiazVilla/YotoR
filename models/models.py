@@ -1051,6 +1051,8 @@ class SwinTransformerV2FPN(torch.nn.Module):
     def __init__(self, model_type, imgs=224, weights='DEFAULT'):
         super(SwinTransformerV2FPN, self).__init__()
         # Get a resnet50 backbone
+        train_nodes, eval_nodes = get_graph_node_names(swin_v2_t())
+        print(train_nodes)
         if model_type == "swint":
             m = swin_v2_t(weights=weights)
         elif model_type == "swinb":
