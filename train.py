@@ -427,6 +427,9 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                     torch.save(ckpt, wdir / 'last_{:03d}.pt'.format(epoch))
                 del ckpt
         # end epoch ----------------------------------------------------------------------------------------------------
+        for p in model.parameters():
+            if p.grad is None:
+                print("Not Grad")
     # end training
 
     if rank in [-1, 0]:
