@@ -75,7 +75,7 @@ Prepare COCO dataset
 <details><summary> <b>Expand</b> </summary>
 
 ```
-cd /yolor
+cd /YotoR
 bash scripts/get_coco.sh
 ```
 
@@ -85,7 +85,7 @@ Prepare pretrained weight
 <details><summary> <b>Expand</b> </summary>
 
 ```
-cd /yotor
+cd /YotoR
 bash scripts/get_pretrain.sh
 ```
 
