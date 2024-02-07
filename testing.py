@@ -118,6 +118,9 @@ def test(data,
         nb, _, height, width = img.shape  # batch size, channels, height, width
         whwh = torch.Tensor([width, height, width, height]).to(device)
 
+        t0_list = []
+        t1_list = []
+
         # Disable gradients
         with torch.no_grad():
             # Run model
@@ -133,6 +136,9 @@ def test(data,
             t = time_synchronized()
             output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres)
             t1 += time_synchronized() - t
+
+        t0_list.append(t0)
+        t1_list.append(t1)
 
         # Statistics per image
         for si, pred in enumerate(output):
@@ -251,8 +257,10 @@ def test(data,
 
     # Print speeds
     t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1)) + (imgsz, imgsz, batch_size)  # tuple
+    tmean = tuple(x / seen * 1E3 for x in (np.mean(t0_list), np.mean(t1_list), np.mean(t0_list) + np.mean(t1_list))) + (imgsz, imgsz, batch_size)  # tuple
     if not training:
         print('Speed: %.1f/%.1f/%.1f ms inference/NMS/total per %gx%g image at batch-size %g' % t)
+        print('Average Speed: %.1f/%.1f/%.1f ms inference/NMS/total per %gx%g image at batch-size %g' % tmean)
 
     # Save JSON
     if save_json and len(jdict):
