@@ -112,8 +112,8 @@ def test(data,
     jdict, stats, ap, ap_class, wandb_images = [], [], [], [], []
     cmax = 100
     c = 0
-    print('REMOVE INFERENCE LIMIT AFTER TESTS')
-    print('num iterations = ', cmax)
+    t0_list = []
+    t1_list = []
     for batch_i, (img, targets, paths, shapes) in enumerate(tqdm(dataloader, desc=s)):
         img = img.to(device, non_blocking=True)
         img = img.half() if half else img.float()  # uint8 to fp16/32
@@ -121,10 +121,6 @@ def test(data,
         targets = targets.to(device)
         nb, _, height, width = img.shape  # batch size, channels, height, width
         whwh = torch.Tensor([width, height, width, height]).to(device)
-
-        t0_list = []
-        t1_list = []
-
         # Disable gradients
         with torch.no_grad():
             # Run model
@@ -140,7 +136,7 @@ def test(data,
             t = time_synchronized()
             output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres)
             t1 += time_synchronized() - t
-
+            
         t0_list.append(t0)
         t1_list.append(t1)
 
@@ -227,7 +223,9 @@ def test(data,
 
             # Append statistics (correct, conf, pcls, tcls)
             stats.append((correct.cpu(), pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
-
+        c+=1
+        if c>=10:
+            break
         # Plot images
         if plots and batch_i < 3:
             f = save_dir / f'test_batch{batch_i}_labels.jpg'  # filename
