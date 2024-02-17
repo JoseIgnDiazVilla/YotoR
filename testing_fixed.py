@@ -127,6 +127,7 @@ def test(data,
             t = time_synchronized()
             inf_out, train_out = model(img, augment=augment)  # inference and training outputs
             t0 += time_synchronized() - t
+            print(t0)
 
             # Compute loss
             if training:  # if model has loss hyperparameters
@@ -224,8 +225,7 @@ def test(data,
             # Append statistics (correct, conf, pcls, tcls)
             stats.append((correct.cpu(), pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
         c+=1
-        if c>=1000:
-            print(t0)
+        if c>=100:
             break
         # Plot images
         #if plots and batch_i < 3:
