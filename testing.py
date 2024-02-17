@@ -114,6 +114,8 @@ def test(data,
     c = 0
     t0_list = []
     t1_list = []
+    t0_tot = 0
+    t1_tot = 0
     for batch_i, (img, targets, paths, shapes) in enumerate(tqdm(dataloader, desc=s)):
         img = img.to(device, non_blocking=True)
         img = img.half() if half else img.float()  # uint8 to fp16/32
@@ -126,7 +128,8 @@ def test(data,
             # Run model
             t = time_synchronized()
             inf_out, train_out = model(img, augment=augment)  # inference and training outputs
-            t0 += time_synchronized() - t
+            t0 = time_synchronized() - t
+            t0_tot += t0
 
             # Compute loss
             if training:  # if model has loss hyperparameters
@@ -135,7 +138,8 @@ def test(data,
             # Run NMS
             t = time_synchronized()
             output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres)
-            t1 += time_synchronized() - t
+            t1 = time_synchronized() - t
+            t1_tot += t1
             
         t0_list.append(t0)
         t1_list.append(t1)
@@ -224,7 +228,7 @@ def test(data,
             # Append statistics (correct, conf, pcls, tcls)
             stats.append((correct.cpu(), pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
         c+=1
-        if c>=100:
+        if c>=1000:
             break
         # Plot images
         if plots and batch_i < 3:
@@ -232,10 +236,6 @@ def test(data,
             plot_images(img, targets, paths, f, names)  # labels
             f = save_dir / f'test_batch{batch_i}_pred.jpg'
             plot_images(img, output_to_target(output, width, height), paths, f, names)  # predictions
-
-        c+=1
-        if c>=cmax:
-            break
 
     # Compute statistics
     stats = [np.concatenate(x, 0) for x in zip(*stats)]  # to numpy
@@ -264,13 +264,17 @@ def test(data,
     # Print speeds
     print('Time arrays:')
     print((np.array(t0_list) + np.array(t1_list)) * 1E3 )
+    print(np.mean(np.array(t0_list) + np.array(t1_list)))
     print(np.array(t0_list) * 1E3 )
     print(np.array(t1_list) * 1E3 )
-    t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1)) + (imgsz, imgsz, batch_size)  # tuple
-    t_mean = tuple(x / seen * 1E3 for x in (np.mean(t0_list[10:-10]), np.mean(t1_list[10:-10]), np.mean(t0_list[10:-10]) + np.mean(t1_list[10:-10]))) + (imgsz, imgsz, batch_size)  # tuple
+    print('seen:', seen, len(t0_list))
+    sample=1000
+    t = tuple((x / seen) * 1E3 for x in (t0_tot, t1_tot, t0_tot + t1_tot)) + (imgsz, imgsz, batch_size)  # tuple
+    t_mean = tuple((x) * 1E3 for x in (np.mean(t0_list[10:20]), np.mean(t1_list[10:20]), np.mean(t0_list[10:20]) + np.mean(t1_list[10:20]))) + (imgsz, imgsz, batch_size)  # tuple
     if not training:
         print('Speed: %.1f/%.1f/%.1f ms inference/NMS/total per %gx%g image at batch-size %g' % t)
         print('Mean Speed: %.1f/%.1f/%.1f ms inference/NMS/total per %gx%g image at batch-size %g' % t_mean)
+
 
     # Save JSON
     if save_json and len(jdict):
