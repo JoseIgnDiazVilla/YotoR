@@ -262,12 +262,12 @@ def test(data,
             print(pf % (names[c], seen, nt[c], p[i], r[i], ap50[i], ap[i]))
 
     # Print speeds
-    print('Time arrays:')
-    print((np.array(t0_list) + np.array(t1_list)) * 1E3 )
-    print(np.mean(np.array(t0_list) + np.array(t1_list)))
-    print(np.array(t0_list) * 1E3 )
-    print(np.array(t1_list) * 1E3 )
-    print('seen:', seen, len(t0_list))
+    #print('Time arrays:')
+    #print((np.array(t0_list) + np.array(t1_list)))
+    #print(np.mean(np.array(t0_list) + np.array(t1_list)))
+    #print(np.array(t0_list))
+    #print(np.array(t1_list))
+    #print('seen:', seen, len(t0_list))
     sample=1000
     t = tuple((x / seen) * 1E3 for x in (t0_tot, t1_tot, t0_tot + t1_tot)) + (imgsz, imgsz, batch_size)  # tuple
     t_mean = tuple((x) * 1E3 for x in (np.mean(t0_list[10:20]), np.mean(t1_list[10:20]), np.mean(t0_list[10:20]) + np.mean(t1_list[10:20]))) + (imgsz, imgsz, batch_size)  # tuple
