@@ -224,7 +224,7 @@ def test(data,
             # Append statistics (correct, conf, pcls, tcls)
             stats.append((correct.cpu(), pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
         c+=1
-        if c>=100:
+        if c>=100000:
             break
         # Plot images
         #if plots and batch_i < 3:
