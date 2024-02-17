@@ -224,7 +224,7 @@ def test(data,
             # Append statistics (correct, conf, pcls, tcls)
             stats.append((correct.cpu(), pred[:, 4].cpu(), pred[:, 5].cpu(), tcls))
         c+=1
-        if c>=10:
+        if c>=100:
             break
         # Plot images
         if plots and batch_i < 3:
@@ -262,11 +262,15 @@ def test(data,
             print(pf % (names[c], seen, nt[c], p[i], r[i], ap50[i], ap[i]))
 
     # Print speeds
+    print('Time arrays:')
+    print((np.array(t0_list) + np.array(t1_list)) * 1E3 )
+    print(np.array(t0_list) * 1E3 )
+    print(np.array(t1_list) * 1E3 )
     t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1)) + (imgsz, imgsz, batch_size)  # tuple
-    tmean = tuple(x / seen * 1E3 for x in (np.mean(t0_list), np.mean(t1_list), np.mean(t0_list) + np.mean(t1_list))) + (imgsz, imgsz, batch_size)  # tuple
+    t_mean = tuple(x / seen * 1E3 for x in (np.mean(t0_list[10:-10]), np.mean(t1_list[10:-10]), np.mean(t0_list[10:-10]) + np.mean(t1_list[10:-10]))) + (imgsz, imgsz, batch_size)  # tuple
     if not training:
         print('Speed: %.1f/%.1f/%.1f ms inference/NMS/total per %gx%g image at batch-size %g' % t)
-        print('Average Speed: %.1f/%.1f/%.1f ms inference/NMS/total per %gx%g image at batch-size %g' % tmean)
+        print('Mean Speed: %.1f/%.1f/%.1f ms inference/NMS/total per %gx%g image at batch-size %g' % t_mean)
 
     # Save JSON
     if save_json and len(jdict):
