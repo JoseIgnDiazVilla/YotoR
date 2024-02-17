@@ -260,6 +260,7 @@ def test(data,
     # Print speeds
     t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1)) + (imgsz, imgsz, batch_size)  # tuple
     t_mean = tuple(x / seen * 1E3 for x in (np.mean(t0_list), np.mean(t1_list), np.mean(t0_list) + np.mean(t1_list))) + (imgsz, imgsz, batch_size)  # tuple
+    print(t0_list)
     print([t0_list[i-1] - t0_list[i-1] for i in range(1, len(t0_list))])
     print(np.mean([t0_list[i-1] - t0_list[i-1] for i in range(1, len(t0_list))]))
     if not training:
