@@ -17,7 +17,7 @@ from torchvision.models.detection.mask_rcnn import MaskRCNN
 from torchvision.models.detection.backbone_utils import LastLevelMaxPool
 from torchvision.ops.feature_pyramid_network import FeaturePyramidNetwork
 
-ONNX_EXPORT = True
+ONNX_EXPORT = False
 
 
 def create_modules(module_defs, img_size, cfg):
