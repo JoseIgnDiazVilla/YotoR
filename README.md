@@ -1,10 +1,8 @@
 # YotoR: You Only Transform One Representation
-Repository for thesis YotoR, an unified network for object detection using transformers.
+Repository for YotoR, an unified network for object detection using transformers.
 
 
 Architecture based on [You Only Learn One Representation: Unified Network for Multiple Tasks](https://arxiv.org/abs/2105.04206) and [Swin Transformer: Hierarchical Vision Transformer using Shifted Windows](https://arxiv.org/pdf/2103.14030.pdf)
-
-[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/you-only-learn-one-representation-unified/real-time-object-detection-on-coco)](https://paperswithcode.com/sota/real-time-object-detection-on-coco?p=you-only-learn-one-representation-unified)
 
 ## Installation
 
@@ -47,7 +45,9 @@ Colab environment
 <details><summary> <b>Expand</b> </summary>
   
 ```
-git clone https://github.com/JoseIgnDiazVilla/YotoR
+apt update
+apt install -y zip htop screen libgl1-mesa-glx
+
 cd YotoR
 
 # pip install required packages
@@ -81,12 +81,26 @@ bash scripts/get_coco.sh
 
 </details>
 
-Prepare pretrained weight
+Prepare pretrained weights
+<details><summary> <b>Expand</b> </summary>
+
+```
+pip install gdown
+gdown --id 1kgxZcOo1PUBo1Q6wFrbsAg0JsiJnz_ra
+gdown --id 184Ed_y-QvB6ulC3-Y5Qhm8M552Vj4K27
+gdown --id 1fTwLWHLuwPZTfJXaCh1WY4uEZ8smg8-6
+gdown --id 1dkW_l9yK6tsaHQIR9aCa2S1_e8KYBDxm
+```
+
+</details>
+
+Evaluate models
 <details><summary> <b>Expand</b> </summary>
 
 ```
 cd /YotoR
-bash scripts/get_pretrain.sh
-```
-
+python testing.py --data data/coco.yaml --task 'test' --img 1280 --batch 1 --conf 0.001 --iou 0.65 --device 0 --cfg cfg/yolor_p6.cfg --weights 'best_yolor_p6.pt' --name yolor_p6_test --save-txt --save-json
+python testing.py --data data/coco.yaml --task 'test' --img 1280 --batch 1 --conf 0.001 --iou 0.65 --device 0 --cfg cfg/yotor_Tp5.cfg --weights 'best_tp5.pt' --name yotor_tp5_test```
+python testing.py --data data/coco.yaml --task 'test' --img 1280 --batch 1 --conf 0.001 --iou 0.65 --device 0 --cfg cfg/yotor_Bp4.cfg --weights 'best_bp4.pt' --name yotor_bp4_test
+python testing.py --data data/coco.yaml --task 'test' --img 1280 --batch 1 --conf 0.001 --iou 0.65 --device 0 --cfg cfg/yotor_Bb4.cfg --weights 'best_bb4.pt' --name yotor_bb4_test
 </details>
